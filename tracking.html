@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,21 +15,25 @@
         .dropdown-content {
             display: none;
             flex-direction: column;
-            background-color: rgba(0,0,0,0.1);
+            background-color: rgba(0, 0, 0, 0.1);
             padding-left: 35px;
         }
+
         .dropdown.active .dropdown-content {
             display: flex;
         }
+
         .dropdown-content a {
             padding: 8px 15px !important;
             font-size: 14px;
             border-left: none !important;
         }
+
         .dropdown-content a::before {
             content: '-';
             margin-right: 10px;
         }
+
         .tracking-item {
             border-left: 2px dashed #ddd;
             padding-left: 20px;
@@ -36,6 +41,7 @@
             position: relative;
             padding-bottom: 20px;
         }
+
         .tracking-item::before {
             content: '';
             width: 12px;
@@ -46,12 +52,50 @@
             left: -7px;
             top: 0;
         }
+
+        /* CSS untuk item status terbaru (active) di timeline */
+        .tracking-item.active {
+            border-left: none; /* Menghilangkan garis di bawah status terbaru */
+        }
         .tracking-item.active::before {
-            background: var(--secondary-color);
-            box-shadow: 0 0 0 4px rgba(249, 168, 38, 0.2);
+            content: '\f48b'; /* Icon truk ekspres dari Font Awesome */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            background: white;
+            color: var(--secondary-color);
+            width: 22px;
+            height: 22px;
+            left: -12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 4px rgba(249, 168, 38, 0.2); /* Efek cahaya di sekitar icon */
+            z-index: 1;
+        }
+
+        /* CSS untuk item status yang sudah selesai (completed) */
+        .tracking-item.completed {
+            border-left: none;
+        }
+
+        .tracking-item.completed::before {
+            content: '\f058'; /* Icon centang (check-circle) */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            background: white;
+            color: #2ecc71; /* Warna hijau sukses */
+            width: 20px;
+            height: 20px;
+            left: -11px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
+
 <body>
     <div id="app" class="app-container">
         <!-- Sidebar -->
@@ -63,26 +107,28 @@
                 </h2>
                 <p style="font-size: 12px; color: #aaa;">Sistem Informasi Tiras & Transaksi</p>
             </div>
-            
+
             <ul class="sidebar-menu">
                 <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li><a href="stok.html"><i class="fas fa-boxes"></i> Informasi Bahan Ajar</a></li>
                 <li><a href="tracking.html" class="active"><i class="fas fa-truck"></i> Tracking Pengiriman</a></li>
-                
+
                 <li class="dropdown" :class="{ active: isLaporanOpen }">
                     <a href="#" @click.prevent="isLaporanOpen = !isLaporanOpen">
-                        <i class="fas fa-chart-bar"></i> Laporan 
-                        <i class="fas" :class="isLaporanOpen ? 'fa-chevron-up' : 'fa-chevron-down'" style="margin-left: auto; margin-right: 0; font-size: 12px;"></i>
+                        <i class="fas fa-chart-bar"></i> Laporan
+                        <i class="fas" :class="isLaporanOpen ? 'fa-chevron-up' : 'fa-chevron-down'"
+                            style="margin-left: auto; margin-right: 0; font-size: 12px;"></i>
                     </a>
                     <div class="dropdown-content">
                         <a href="tracking.html">Monitoring Progress DO</a>
                         <a href="stok.html">Rekap Bahan Ajar</a>
                     </div>
                 </li>
-                
+
                 <li><a href="histori.html"><i class="fas fa-history"></i> Histori Transaksi</a></li>
                 <li style="margin-top: 50px;">
-                    <a href="#" @click.prevent="logout" style="color: #ff6b6b;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    <a href="#" @click.prevent="logout" style="color: #ff6b6b;"><i class="fas fa-sign-out-alt"></i>
+                        Logout</a>
                 </li>
             </ul>
         </aside>
@@ -92,7 +138,8 @@
             <div class="topbar">
                 <div class="greeting">
                     <h3>Tracking Pengiriman</h3>
-                    <p style="font-size: 14px; color: var(--text-light);">Pantau status pengiriman bahan ajar mahasiswa.</p>
+                    <p style="font-size: 14px; color: var(--text-light);">Pantau status pengiriman bahan ajar mahasiswa.
+                    </p>
                 </div>
                 <div class="user-info">
                     <div style="text-align: right;">
@@ -131,13 +178,15 @@
                                 <option value="">Pilih Ekspedisi</option>
                                 <option v-for="exp in availableExpeditions" :value="exp">{{ exp }}</option>
                             </select>
-                            <small v-if="!newDO.upbjj" style="color: var(--danger);">* Pilih wilayah terlebih dahulu</small>
+                            <small v-if="!newDO.upbjj" style="color: var(--danger);">* Pilih wilayah terlebih
+                                dahulu</small>
                         </div>
                         <div class="form-group">
                             <label>Paket Bahan Ajar</label>
                             <select v-model="newDO.paket" required>
                                 <!-- Merender paket dari data 'paket' -->
-                                <option v-for="p in paket" :value="p.kode">{{ p.nama }} (Rp {{ p.harga.toLocaleString('id-ID') }})</option>
+                                <option v-for="p in paket" :value="p.kode">{{ p.nama }} (Rp {{
+                                    p.harga.toLocaleString('id-ID') }})</option>
                             </select>
                         </div>
                         <button type="submit" class="btn btn-primary" style="width: 100%;">Tambah DO</button>
@@ -166,7 +215,8 @@
                                         <small style="color: var(--text-light);">{{ doItem.nim }}</small>
                                     </td>
                                     <td>
-                                        <span class="badge" :class="doItem.status === 'Dikirim' ? 'badge-success' : 'badge-warning'">
+                                        <span class="badge"
+                                            :class="doItem.status === 'Dikirim' ? 'badge-success' : 'badge-warning'">
                                             {{ doItem.status }}
                                         </span>
                                     </td>
@@ -189,15 +239,18 @@
                     <span class="close" @click="showTrackingModal = false">&times;</span>
                     <h3 style="margin-bottom: 10px; color: var(--primary-color);">Detail Pelacakan</h3>
                     <p style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-                        No. DO: <strong>{{ activeTracking.nomorDO }}</strong> | 
+                        No. DO: <strong>{{ activeTracking.nomorDO }}</strong> |
                         Kurir: <strong>{{ activeTracking.ekspedisi }}</strong>
                     </p>
-                    
+
                     <!-- Informasi Ringkasan Pengiriman -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; font-size: 13px; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+                    <div
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; font-size: 13px; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
                         <div>
                             <div style="color: var(--text-light); margin-bottom: 2px;">Status Pengiriman:</div>
-                            <span class="badge" :class="activeTracking.status === 'Dikirim' ? 'badge-success' : 'badge-warning'" style="font-size: 11px; padding: 4px 8px;">
+                            <span class="badge"
+                                :class="activeTracking.status === 'Dikirim' ? 'badge-success' : 'badge-warning'"
+                                style="font-size: 11px; padding: 4px 8px;">
                                 {{ activeTracking.status }}
                             </span>
                         </div>
@@ -211,20 +264,25 @@
                         </div>
                         <div>
                             <div style="color: var(--text-light); margin-bottom: 2px;">Total Pembayaran:</div>
-                            <strong style="color: var(--primary-color); font-size: 15px;">Rp {{ activeTracking.total ? activeTracking.total.toLocaleString('id-ID') : '0' }}</strong>
+                            <strong style="color: var(--primary-color); font-size: 15px;">Rp {{ activeTracking.total ?
+                                activeTracking.total.toLocaleString('id-ID') : '0' }}</strong>
                         </div>
                     </div>
 
-                    <h4 style="margin-bottom: 10px; font-size: 14px; color: var(--text-light);">Timeline Perjalanan:</h4>
-                    
+                    <h4 style="margin-bottom: 10px; font-size: 14px; color: var(--text-light);">Timeline Perjalanan:
+                    </h4>
+
                     <div class="tracking-timeline" style="max-height: 400px; overflow-y: auto; padding: 10px;">
-                        <!-- v-for: Merender setiap langkah perjalanan secara dinamis -->
-                        <div v-for="(step, index) in activeTracking.perjalanan" :key="index" class="tracking-item" :class="{ active: index === 0 }">
+                        <!-- v-for: Looping data perjalanan secara dinamis menggunakan Vue.js -->
+                        <!-- Class 'active' diterapkan pada index terakhir (status terbaru) -->
+                        <!-- Class 'completed' diterapkan jika keterangan mengandung kata 'Selesai' -->
+                        <div v-for="(step, index) in activeTracking.perjalanan" :key="index" class="tracking-item" :class="{ active: index === activeTracking.perjalanan.length - 1, completed: step.keterangan.includes('Selesai') }">
                             <small style="color: var(--text-light);">{{ step.waktu }}</small>
                             <p><strong>{{ step.keterangan }}</strong></p>
                         </div>
                         <!-- Tampilan jika tidak ada data perjalanan -->
-                        <div v-if="!activeTracking.perjalanan || activeTracking.perjalanan.length === 0" style="text-align: center; color: #aaa; padding: 20px;">
+                        <div v-if="!activeTracking.perjalanan || activeTracking.perjalanan.length === 0"
+                            style="text-align: center; color: #aaa; padding: 20px;">
                             Data perjalanan belum tersedia.
                         </div>
                     </div>
@@ -238,4 +296,5 @@
     <script src="js/data.js"></script>
     <script src="js/dataBahanAjar.js"></script>
 </body>
+
 </html>

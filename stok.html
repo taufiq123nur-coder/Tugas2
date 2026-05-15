@@ -111,6 +111,7 @@
                     </div>
                     <div class="filter-item">
                         <label>Status Stok</label>
+                        <!-- v-model 'filterStatus' terhubung ke logika filtering di dataBahanAjar.js -->
                         <select class="form-group select" v-model="filterStatus" style="width: 100%; padding: 8px; border-radius: 5px;">
                             <option value="">Semua Status</option>
                             <option value="Stok Tersedia">Stok Tersedia</option>
@@ -254,7 +255,9 @@
 
                 <div class="form-group" style="margin-top: 10px;">
                     <label>Catatan</label>
+                    <!-- Batasan input 360 karakter menggunakan atribut maxlength -->
                     <textarea v-model="newItem.catatanHTML" maxlength="360" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; height: 60px;"></textarea>
+                    <!-- Counter karakter real-time menggunakan binding data Vue -->
                     <small style="color: #888; display: block; text-align: right;">{{ (newItem.catatanHTML || '').length }}/360 karakter</small>
                 </div>
                 

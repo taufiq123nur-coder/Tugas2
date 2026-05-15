@@ -200,7 +200,7 @@ var app = new Vue({
       if (this.filterUPBJJ) result = result.filter(item => item.upbjj === this.filterUPBJJ);
       // Filter Kategori
       if (this.filterKategori) result = result.filter(item => item.kategori === this.filterKategori);
-      // Filter Status (Menggunakan method getStatusText)
+      // Filter Status: Membandingkan teks status hasil method getStatusText dengan pilihan user
       if (this.filterStatus) result = result.filter(item => this.getStatusText(item) === this.filterStatus);
 
       // Pengurutan (Sorting)
@@ -272,11 +272,14 @@ var app = new Vue({
       this.modal = null;
     },
 
-    // Menentukan teks status berdasarkan qty stok
+    /**
+     * getStatusText: Menentukan label status barang berdasarkan jumlah qty
+     * Digunakan untuk tampilan tabel dan fungsi filter
+     */
     getStatusText(item) {
-      if (item.qty <= 0) return 'Stok Habis';
-      if (item.qty <= item.safety) return 'Stok Menipis';
-      return 'Stok Tersedia';
+      if (item.qty <= 0) return 'Stok Habis'; // Jika stok kosong
+      if (item.qty <= item.safety) return 'Stok Menipis'; // Jika stok di bawah batas aman (safety stock)
+      return 'Stok Tersedia'; // Jika stok mencukupi
     },
 
     // Menentukan class CSS badge berdasarkan status
