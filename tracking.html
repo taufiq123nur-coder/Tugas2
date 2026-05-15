@@ -55,10 +55,13 @@
 
         /* CSS untuk item status terbaru (active) di timeline */
         .tracking-item.active {
-            border-left: none; /* Menghilangkan garis di bawah status terbaru */
+            border-left: none;
+            /* Menghilangkan garis di bawah status terbaru */
         }
+
         .tracking-item.active::before {
-            content: '\f48b'; /* Icon truk ekspres dari Font Awesome */
+            content: '\f48b';
+            /* Icon truk ekspres dari Font Awesome */
             font-family: "Font Awesome 6 Free";
             font-weight: 900;
             background: white;
@@ -70,7 +73,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 0 4px rgba(249, 168, 38, 0.2); /* Efek cahaya di sekitar icon */
+            box-shadow: 0 0 0 4px rgba(249, 168, 38, 0.2);
+            /* Efek cahaya di sekitar icon */
             z-index: 1;
         }
 
@@ -80,11 +84,13 @@
         }
 
         .tracking-item.completed::before {
-            content: '\f058'; /* Icon centang (check-circle) */
+            content: '\f058';
+            /* Icon centang (check-circle) */
             font-family: "Font Awesome 6 Free";
             font-weight: 900;
             background: white;
-            color: #2ecc71; /* Warna hijau sukses */
+            color: #2ecc71;
+            /* Warna hijau sukses */
             width: 20px;
             height: 20px;
             left: -11px;
@@ -276,7 +282,8 @@
                         <!-- v-for: Looping data perjalanan secara dinamis menggunakan Vue.js -->
                         <!-- Class 'active' diterapkan pada index terakhir (status terbaru) -->
                         <!-- Class 'completed' diterapkan jika keterangan mengandung kata 'Selesai' -->
-                        <div v-for="(step, index) in activeTracking.perjalanan" :key="index" class="tracking-item" :class="{ active: index === activeTracking.perjalanan.length - 1, completed: step.keterangan.includes('Selesai') }">
+                        <div v-for="(step, index) in activeTracking.perjalanan" :key="index" class="tracking-item"
+                            :class="{ active: index === activeTracking.perjalanan.length - 1, completed: step.keterangan.includes('Selesai') }">
                             <small style="color: var(--text-light);">{{ step.waktu }}</small>
                             <p><strong>{{ step.keterangan }}</strong></p>
                         </div>
