@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histori Transaksi - SITTA UT</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+    <style>
+        .dropdown-content {
+            display: none;
+            flex-direction: column;
+            background-color: rgba(0,0,0,0.1);
+            padding-left: 35px;
+        }
+        .dropdown.active .dropdown-content {
+            display: flex;
+        }
+        .dropdown-content a {
+            padding: 8px 15px !important;
+            font-size: 14px;
+            border-left: none !important;
+        }
+        .dropdown-content a::before {
+            content: '-';
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- Notifikasi Toast -->
+        <div class="toast" :class="{ show: toast.show, success: toast.isSuccess }">
+            {{ toast.message }}
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <img src="img/logo-ut.png" alt="Logo UT" style="width: 35px;">
+                    SITTA
+                </h2>
+                <p style="font-size: 12px; color: #aaa;">Sistem Informasi Tiras & Transaksi</p>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="stok.html"><i class="fas fa-boxes"></i> Informasi Bahan Ajar</a></li>
+                <li><a href="tracking.html"><i class="fas fa-truck"></i> Tracking Pengiriman</a></li>
+                
+                <li class="dropdown" :class="{ active: isLaporanOpen }">
+                    <a href="#" @click.prevent="isLaporanOpen = !isLaporanOpen">
+                        <i class="fas fa-chart-bar"></i> Laporan 
+                        <i class="fas" :class="isLaporanOpen ? 'fa-chevron-up' : 'fa-chevron-down'" style="margin-left: auto; margin-right: 0; font-size: 12px;"></i>
+                    </a>
+                    <div class="dropdown-content">
+                        <a href="tracking.html">Monitoring Progress DO</a>
+                        <a href="stok.html">Rekap Bahan Ajar</a>
+                    </div>
+                </li>
+                
+                <li><a href="histori.html" class="active"><i class="fas fa-history"></i> Histori Transaksi</a></li>
+                <li style="margin-top: 50px;">
+                    <a href="#" @click.prevent="logout" style="color: #ff6b6b;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Konten Utama -->
+        <main class="main-content">
+            <div class="topbar">
+                <div class="greeting">
+                    <h3>Histori Transaksi</h3>
+                    <p style="font-size: 14px; color: var(--text-light);">Log aktivitas sistem terbaru</p>
+                </div>
+                <div class="user-info">
+                    <div style="text-align: right;">
+                        <strong>{{ user.nama }}</strong>
+                        <div style="font-size: 12px; color: var(--text-light);">{{ user.role }}</div>
+                    </div>
+                    <img :src="userAvatar" alt="Profil Pengguna" style="width: 40px; height: 40px; border-radius: 50%;">
+                </div>
+            </div>
+
+            <!-- Tabel Histori -->
+            <div class="card">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID Ref</th>
+                                <th>Waktu</th>
+                                <th>Jenis</th>
+                                <th>Item / Keterangan</th>
+                                <th>Qty</th>
+                                <th>Penerima</th>
+                                <th>Status</th>
+                                <th>Admin</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(log, index) in histori" :key="index">
+                                <td><code style="background: #f0f0f0; padding: 2px 5px; border-radius: 3px;">{{ log.id }}</code></td>
+                                <td style="font-size: 13px;">{{ log.tanggal }}</td>
+                                <td>
+                                    <span class="badge" :class="log.jenis === 'Pengiriman' ? 'badge-primary' : 'badge-warning'">
+                                        {{ log.jenis }}
+                                    </span>
+                                </td>
+                                <td><strong>{{ log.item }}</strong></td>
+                                <td>{{ log.qty }}</td>
+                                <td>{{ log.penerima }}</td>
+                                <td>{{ log.status }}</td>
+                                <td style="font-size: 12px; color: var(--text-light);">{{ log.admin }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Script Utama -->
+    <script src="js/data.js"></script>
+    <script src="js/dataBahanAjar.js"></script>
+</body>
+</html>

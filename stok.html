@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SITTA - Informasi Bahan Ajar</title>
+    <link rel="icon" type="image/png" href="img/logo-ut.png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 1. MEMUAT VUE.JS (FRAMEWORK UTAMA) -->
+    <!-- Script ini diletakkan di head agar instance Vue siap saat DOM selesai dimuat -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+    <style>
+        .dropdown-content {
+            display: none;
+            flex-direction: column;
+            background-color: rgba(0,0,0,0.1);
+            padding-left: 35px;
+        }
+        .dropdown.active .dropdown-content {
+            display: flex;
+        }
+        .dropdown-content a {
+            padding: 8px 15px !important;
+            font-size: 14px;
+            border-left: none !important;
+        }
+        .dropdown-content a::before {
+            content: '-';
+            margin-right: 10px;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        .search-container input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <img src="img/logo-ut.png" alt="Logo UT" style="width: 35px;">
+                    SITTA
+                </h2>
+                <p style="font-size: 12px; color: #aaa;">Sistem Informasi Tiras & Transaksi</p>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="stok.html" class="active"><i class="fas fa-boxes"></i> Informasi Bahan Ajar</a></li>
+                <li><a href="tracking.html"><i class="fas fa-truck"></i> Tracking Pengiriman</a></li>
+                
+                <li class="dropdown" :class="{ active: isLaporanOpen }">
+                    <a href="#" @click.prevent="isLaporanOpen = !isLaporanOpen">
+                        <i class="fas fa-chart-bar"></i> Laporan 
+                        <i class="fas" :class="isLaporanOpen ? 'fa-chevron-up' : 'fa-chevron-down'" style="margin-left: auto; margin-right: 0; font-size: 12px;"></i>
+                    </a>
+                    <div class="dropdown-content">
+                        <a href="tracking.html">Monitoring Progress DO</a>
+                        <a href="stok.html">Rekap Bahan Ajar</a>
+                    </div>
+                </li>
+                
+                <li><a href="histori.html"><i class="fas fa-history"></i> Histori Transaksi</a></li>
+                <li style="margin-top: 50px;">
+                    <a href="#" @click.prevent="logout" style="color: #ff6b6b;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="topbar">
+                <div class="greeting">
+                    <h3>Informasi Bahan Ajar</h3>
+                    <p style="font-size: 14px; color: var(--text-light);">Kelola stok dan ketersediaan buku.</p>
+                </div>
+                <div class="user-info">
+                    <div style="text-align: right;">
+                        <strong>{{ user.nama }}</strong>
+                        <div style="font-size: 12px; color: var(--text-light);">{{ user.role }}</div>
+                    </div>
+                    <img :src="userAvatar" alt="Profil Pengguna" style="width: 40px; height: 40px; border-radius: 50%;">
+                </div>
+            </div>
+
+            <!-- Bagian Filter (v-model untuk mengontrol filter secara real-time) -->
+            <div class="card">
+                <div class="filter-bar">
+                    <div class="filter-item">
+                        <label>UPBJJ/Daerah</label>
+                        <select class="form-group select" v-model="filterUPBJJ" style="width: 100%; padding: 8px; border-radius: 5px;">
+                            <option value="">Semua Daerah</option>
+                            <!-- Merender daftar wilayah dari upbjjList -->
+                            <option v-for="item in upbjjList" :value="item">{{ item }}</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>Kategori</label>
+                        <select class="form-group select" v-model="filterKategori" style="width: 100%; padding: 8px; border-radius: 5px;">
+                            <option value="">Semua Kategori</option>
+                            <option v-for="item in kategoriList" :value="item">{{ item }}</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>Status Stok</label>
+                        <select class="form-group select" v-model="filterStatus" style="width: 100%; padding: 8px; border-radius: 5px;">
+                            <option value="">Semua Status</option>
+                            <option value="Stok Tersedia">Stok Tersedia</option>
+                            <option value="Stok Menipis">Stok Menipis</option>
+                            <option value="Stok Habis">Stok Habis</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>Urutkan Berdasarkan</label>
+                        <select class="form-group select" v-model="sortBy" style="width: 100%; padding: 8px; border-radius: 5px;">
+                            <option value="judul">Judul (A-Z)</option>
+                            <option value="qty">Jumlah Stok</option>
+                            <option value="harga">Harga</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Kolom Pencarian Global -->
+                <div class="search-container" style="display: flex; gap: 10px;">
+                    <input type="text" v-model="searchQuery" placeholder="Cari Kode atau Judul Mata Kuliah..." style="flex: 1;">
+                    <button v-if="user.role === 'Administrator'" class="btn btn-success" @click="showAddModal = true">
+                        <i class="fas fa-plus"></i> Tambah Bahan Ajar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabel Data Stok -->
+            <div class="card">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Kode</th>
+                                <th>Judul</th>
+                                <th>UPBJJ</th>
+                                <th>Rak</th>
+                                <th>Harga</th>
+                                <th>Stok</th>
+                                <th>Status</th>
+                                <th v-if="user.role === 'Administrator'">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Looping data dari 'filteredStok' (Hasil filter & sorting) -->
+                            <tr v-for="(item, index) in filteredStok" :key="item.kode">
+                                <td><strong>{{ item.kode }}</strong></td>
+                                <td>
+                                    {{ item.judul }}<br>
+                                    <small style="color: var(--text-light);">{{ item.kategori }}</small><br>
+                                    <!-- Merender HTML dari catatan menggunakan v-html -->
+                                    <span v-html="item.catatanHTML" style="font-size: 11px;"></span>
+                                </td>
+                                <td>{{ item.upbjj }}</td>
+                                <td>{{ item.lokasiRak }}</td>
+                                <td>Rp {{ item.harga.toLocaleString('id-ID') }}</td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 5px;">
+                                        <span>{{ item.qty }}</span>
+                                        <small style="color: #aaa;">/ {{ item.safety }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <!-- Menentukan warna badge secara dinamis menggunakan method getStatusClass -->
+                                    <span class="badge" :class="getStatusClass(item)">
+                                        {{ getStatusText(item) }}
+                                    </span>
+                                </td>
+                                <td v-if="user.role === 'Administrator'">
+                                    <div style="display: flex; gap: 5px;">
+                                        <!-- Membuka modal edit dengan mengirim object item yang diklik -->
+                                        <button class="btn btn-primary btn-sm" @click="editStok(item)" title="Edit Stok">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <!-- Tombol Hapus -->
+                                        <button class="btn btn-danger btn-sm" @click="deleteStok(index)" title="Hapus Bahan Ajar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Tampilan jika hasil filter kosong -->
+                            <tr v-if="filteredStok.length === 0">
+                                <td colspan="8" style="text-align: center; padding: 30px;">Data tidak ditemukan.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <!-- MODAL TAMBAH BAHAN AJAR BARU -->
+        <div class="stok-modal" :class="{ show: showAddModal }">
+            <div class="stok-content" style="max-width: 500px;">
+                <span class="close" @click="showAddModal = false">&times;</span>
+                <h3 style="margin-bottom: 20px; color: var(--primary-color);">Tambah Bahan Ajar Baru</h3>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Kode MK</label>
+                        <input type="text" v-model="newItem.kode" placeholder="Contoh: ASIP4301">
+                    </div>
+                    <div class="form-group">
+                        <label>Judul MK</label>
+                        <input type="text" v-model="newItem.judul" placeholder="Contoh: Pengantar Ilmu Komunikasi">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;">
+                    <div class="form-group">
+                        <label>Kategori</label>
+                        <select v-model="newItem.kategori" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                            <option v-for="cat in kategoriList" :value="cat">{{ cat }}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>UPBJJ</label>
+                        <select v-model="newItem.upbjj" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                            <option v-for="loc in upbjjList" :value="loc">{{ loc }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 10px;">
+                    <div class="form-group">
+                        <label>Harga (Rp)</label>
+                        <input type="number" v-model.number="newItem.harga">
+                    </div>
+                    <div class="form-group">
+                        <label>Stok</label>
+                        <input type="number" v-model.number="newItem.qty">
+                    </div>
+                    <div class="form-group">
+                        <label>Safety</label>
+                        <input type="number" v-model.number="newItem.safety">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 10px;">
+                    <label>Lokasi Rak</label>
+                    <input type="text" v-model="newItem.lokasiRak" placeholder="Contoh: R1-A3">
+                </div>
+
+                <div class="form-group" style="margin-top: 10px;">
+                    <label>Catatan (HTML)</label>
+                    <textarea v-model="newItem.catatanHTML" placeholder="Contoh: <strong>Edisi Baru</strong>" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; height: 60px;"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn btn-success" style="flex: 1;" @click="addNewStok">Simpan Bahan Ajar</button>
+                    <button class="btn btn-secondary" style="flex: 1;" @click="showAddModal = false">Batal</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Modal -->
+        <div class="stok-modal" :class="{ show: showModal }">
+            <div class="stok-content">
+                <span class="close" @click="showModal = false">&times;</span>
+                <h3 style="margin-bottom: 20px; color: var(--primary-color);">Perbarui Stok</h3>
+                <p style="margin-bottom: 15px;"><strong>{{ selectedItem.judul }}</strong> ({{ selectedItem.kode }})</p>
+                
+                <div class="form-group">
+                    <label>Jumlah Stok Baru</label>
+                    <input type="number" v-model.number="editQty" min="0">
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn btn-primary" style="flex: 1;" @click="saveStok">Simpan Perubahan</button>
+                    <button class="btn btn-secondary" style="flex: 1;" @click="showModal = false">Batal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. MEMUAT LOGIKA DAN DATA (VUE INSTANCE) -->
+    <!-- Logika stok, filter, dan sorting dikelola secara terpusat di file ini -->
+    <script src="js/data.js"></script>
+    <script src="js/dataBahanAjar.js"></script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SITTA - Tracking Pengiriman</title>
+    <link rel="icon" type="image/png" href="img/logo-ut.png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 1. MEMUAT VUE.JS (FRAMEWORK UTAMA) -->
+    <!-- Framework Vue.js sebagai mesin penggerak data reaktif di halaman ini -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+    <style>
+        .dropdown-content {
+            display: none;
+            flex-direction: column;
+            background-color: rgba(0,0,0,0.1);
+            padding-left: 35px;
+        }
+        .dropdown.active .dropdown-content {
+            display: flex;
+        }
+        .dropdown-content a {
+            padding: 8px 15px !important;
+            font-size: 14px;
+            border-left: none !important;
+        }
+        .dropdown-content a::before {
+            content: '-';
+            margin-right: 10px;
+        }
+        .tracking-item {
+            border-left: 2px dashed #ddd;
+            padding-left: 20px;
+            margin-left: 10px;
+            position: relative;
+            padding-bottom: 20px;
+        }
+        .tracking-item::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            position: absolute;
+            left: -7px;
+            top: 0;
+        }
+        .tracking-item.active::before {
+            background: var(--secondary-color);
+            box-shadow: 0 0 0 4px rgba(249, 168, 38, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <img src="img/logo-ut.png" alt="Logo UT" style="width: 35px;">
+                    SITTA
+                </h2>
+                <p style="font-size: 12px; color: #aaa;">Sistem Informasi Tiras & Transaksi</p>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="stok.html"><i class="fas fa-boxes"></i> Informasi Bahan Ajar</a></li>
+                <li><a href="tracking.html" class="active"><i class="fas fa-truck"></i> Tracking Pengiriman</a></li>
+                
+                <li class="dropdown" :class="{ active: isLaporanOpen }">
+                    <a href="#" @click.prevent="isLaporanOpen = !isLaporanOpen">
+                        <i class="fas fa-chart-bar"></i> Laporan 
+                        <i class="fas" :class="isLaporanOpen ? 'fa-chevron-up' : 'fa-chevron-down'" style="margin-left: auto; margin-right: 0; font-size: 12px;"></i>
+                    </a>
+                    <div class="dropdown-content">
+                        <a href="tracking.html">Monitoring Progress DO</a>
+                        <a href="stok.html">Rekap Bahan Ajar</a>
+                    </div>
+                </li>
+                
+                <li><a href="histori.html"><i class="fas fa-history"></i> Histori Transaksi</a></li>
+                <li style="margin-top: 50px;">
+                    <a href="#" @click.prevent="logout" style="color: #ff6b6b;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="topbar">
+                <div class="greeting">
+                    <h3>Tracking Pengiriman</h3>
+                    <p style="font-size: 14px; color: var(--text-light);">Pantau status pengiriman bahan ajar mahasiswa.</p>
+                </div>
+                <div class="user-info">
+                    <div style="text-align: right;">
+                        <strong>{{ user.nama }}</strong>
+                        <div style="font-size: 12px; color: var(--text-light);">{{ user.role }}</div>
+                    </div>
+                    <img :src="userAvatar" alt="Profil Pengguna" style="width: 40px; height: 40px; border-radius: 50%;">
+                </div>
+            </div>
+
+            <div class="grid" style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
+                <!-- Form Input DO Baru (Data Binding dengan v-model) -->
+                <div class="card">
+                    <h3 style="margin-bottom: 20px; color: var(--primary-color);">Input Delivery Order Baru</h3>
+                    <!-- Submit diproses oleh method 'addDO' -->
+                    <form @submit.prevent="addDO">
+                        <div class="form-group">
+                            <label>NIM Mahasiswa</label>
+                            <input type="text" v-model="newDO.nim" placeholder="Contoh: 012345678" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nama Penerima</label>
+                            <input type="text" v-model="newDO.nama" placeholder="Nama Lengkap" required>
+                        </div>
+                        <div class="form-group">
+                            <label>UPBJJ/Wilayah</label>
+                            <select v-model="newDO.upbjj" required>
+                                <option value="">Pilih Wilayah</option>
+                                <option v-for="item in upbjjList" :value="item">{{ item }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <!-- Dropdown Dependen: Isi pilihan ekspedisi berubah berdasarkan wilayah yang dipilih -->
+                            <label>Ekspedisi</label>
+                            <select v-model="newDO.ekspedisi" :disabled="!newDO.upbjj" required>
+                                <option value="">Pilih Ekspedisi</option>
+                                <option v-for="exp in availableExpeditions" :value="exp">{{ exp }}</option>
+                            </select>
+                            <small v-if="!newDO.upbjj" style="color: var(--danger);">* Pilih wilayah terlebih dahulu</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Paket Bahan Ajar</label>
+                            <select v-model="newDO.paket" required>
+                                <!-- Merender paket dari data 'paket' -->
+                                <option v-for="p in paket" :value="p.kode">{{ p.nama }} (Rp {{ p.harga.toLocaleString('id-ID') }})</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Tambah DO</button>
+                    </form>
+                </div>
+
+                <!-- Daftar DO yang sudah ada -->
+                <div class="card">
+                    <h3 style="margin-bottom: 20px; color: var(--primary-color);">Daftar Pengiriman</h3>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nomor DO</th>
+                                    <th>Nama / NIM</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Looping daftar DO dari 'trackingList' -->
+                                <tr v-for="doItem in trackingList" :key="doItem.nomorDO">
+                                    <td><strong>{{ doItem.nomorDO }}</strong></td>
+                                    <td>
+                                        {{ doItem.nama }}<br>
+                                        <small style="color: var(--text-light);">{{ doItem.nim }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge" :class="doItem.status === 'Dikirim' ? 'badge-success' : 'badge-warning'">
+                                            {{ doItem.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <!-- Tombol Lacak memicu modal dengan data detail -->
+                                        <button class="btn btn-secondary btn-sm" @click="viewTracking(doItem)">
+                                            <i class="fas fa-search"></i> Lacak
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Detail Pelacakan (Timeline Perjalanan) -->
+            <div class="stok-modal" :class="{ show: showTrackingModal }">
+                <div class="stok-content" style="max-width: 600px;">
+                    <span class="close" @click="showTrackingModal = false">&times;</span>
+                    <h3 style="margin-bottom: 10px; color: var(--primary-color);">Detail Pelacakan</h3>
+                    <p style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                        No. DO: <strong>{{ activeTracking.nomorDO }}</strong> | 
+                        Kurir: <strong>{{ activeTracking.ekspedisi }}</strong>
+                    </p>
+                    
+                    <!-- Informasi Ringkasan Pengiriman -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; font-size: 13px; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+                        <div>
+                            <div style="color: var(--text-light); margin-bottom: 2px;">Status Pengiriman:</div>
+                            <span class="badge" :class="activeTracking.status === 'Dikirim' ? 'badge-success' : 'badge-warning'" style="font-size: 11px; padding: 4px 8px;">
+                                {{ activeTracking.status }}
+                            </span>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-light); margin-bottom: 2px;">Tanggal Kirim:</div>
+                            <strong>{{ activeTracking.tanggalKirim }}</strong>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-light); margin-bottom: 2px;">Paket Bahan Ajar:</div>
+                            <strong>{{ getPackageName(activeTracking.paket) }}</strong>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-light); margin-bottom: 2px;">Total Pembayaran:</div>
+                            <strong style="color: var(--primary-color); font-size: 15px;">Rp {{ activeTracking.total ? activeTracking.total.toLocaleString('id-ID') : '0' }}</strong>
+                        </div>
+                    </div>
+
+                    <h4 style="margin-bottom: 10px; font-size: 14px; color: var(--text-light);">Timeline Perjalanan:</h4>
+                    
+                    <div class="tracking-timeline" style="max-height: 400px; overflow-y: auto; padding: 10px;">
+                        <!-- v-for: Merender setiap langkah perjalanan secara dinamis -->
+                        <div v-for="(step, index) in activeTracking.perjalanan" :key="index" class="tracking-item" :class="{ active: index === 0 }">
+                            <small style="color: var(--text-light);">{{ step.waktu }}</small>
+                            <p><strong>{{ step.keterangan }}</strong></p>
+                        </div>
+                        <!-- Tampilan jika tidak ada data perjalanan -->
+                        <div v-if="!activeTracking.perjalanan || activeTracking.perjalanan.length === 0" style="text-align: center; color: #aaa; padding: 20px;">
+                            Data perjalanan belum tersedia.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 2. MEMUAT LOGIKA DAN DATA (VUE INSTANCE) -->
+    <!-- Menghubungkan form input dan timeline tracking ke sistem Vue -->
+    <script src="js/data.js"></script>
+    <script src="js/dataBahanAjar.js"></script>
+</body>
+</html>

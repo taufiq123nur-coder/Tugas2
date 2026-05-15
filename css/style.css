@@ -1,0 +1,330 @@
+/* style.css - File CSS Eksternal (Global)
+   Tujuan: Menyimpan seluruh aturan desain agar bisa digunakan berulang di berbagai halaman HTML.
+*/
+
+/* 1. Mengimpor Font Poppins dari Google Fonts agar tipografi lebih modern */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* 2. Deklarasi Variabel CSS (:root) 
+   Digunakan untuk menyimpan warna utama, warna background, dan transisi . */
+:root {
+    --primary-color: #0F3460; /* Biru Gelap (UT) */
+    --primary-light: #16213E; /* Varian Biru Gelap */
+    --secondary-color: #F9A826; /* Kuning UT */
+    --bg-color: #F4F7F6; /* Warna latar belakang abu-abu terang */
+    --text-color: #333333; /* Warna teks utama */
+    --text-light: #777777; /* Warna teks sekunder/redup */
+    --white: #FFFFFF;
+    --danger: #E94560; /* Merah untuk error/gagal */
+    --success: #28a745; /* Hijau untuk sukses */
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Efek bayangan */
+    --transition: all 0.3s ease; /* Efek transisi halus */
+}
+
+/* 3. Reset CSS Global
+   Menghapus margin dan padding bawaan browser agar seragam. */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* Agar padding tidak merubah ukuran lebar elemen */
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* --- KUMPULAN UTILITAS (Fungsi Bantuan Umum) --- */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Desain Dasar Tombol (Button) */
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: var(--transition); /* Efek saat di-hover */
+    text-align: center;
+    text-decoration: none;
+}
+
+/* Varian Tombol */
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-light);
+    transform: translateY(-2px); /* Tombol sedikit naik saat di-hover */
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    color: var(--white);
+}
+
+.btn-secondary:hover {
+    background-color: #e0961a;
+    transform: translateY(-2px);
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+/* --- DESAIN STOK BOX (Kotak Pop-up) --- */
+.stok-modal {
+    display: none; 
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5); /* Latar belakang transparan gelap */
+    backdrop-filter: blur(5px); /* Efek blur pada background */
+    justify-content: center;
+    align-items: center;
+}
+
+/* Class '.show' ini akan ditambahkan/dihapus secara dinamis oleh Vue.js 
+   untuk menampilkan atau menyembunyikan modal. */
+.stok-modal.show {
+    display: flex;
+}
+
+/* Isi dari Stok Box */
+.stok-content {
+    background-color: var(--white);
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    position: relative;
+}
+
+/* Tombol Tutup (X) pada Stok */
+.close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-light);
+}
+
+.close:hover {
+    color: var(--danger);
+}
+
+/* --- DESAIN FORMULIR --- */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    transition: var(--transition);
+    font-size: 14px;
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(15, 52, 96, 0.2); /* Efek nyala (glow) biru saat diklik */
+}
+
+/* --- LAYOUT APLIKASI UTAMA --- */
+.app-container {
+    display: flex;
+    min-height: 100vh; /* Sepenuh tinggi layar */
+}
+
+/* Sidebar Sebelah Kiri */
+.sidebar {
+    width: 280px;
+    background-color: var(--primary-light);
+    color: var(--white);
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+.sidebar-header {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.sidebar-header h2 {
+    color: var(--secondary-color);
+    font-size: 24px;
+}
+
+.sidebar-menu {
+    list-style: none;
+}
+
+.sidebar-menu a {
+    color: #cbd5e1;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    padding: 12px 25px;
+    transition: var(--transition);
+    border-left: 4px solid transparent; /* Garis indikator menu aktif */
+}
+
+.sidebar-menu a:hover, .sidebar-menu a.active {
+    background-color: rgba(255,255,255,0.05);
+    color: var(--white);
+    border-left-color: var(--secondary-color); /* Berubah warna kuning saat aktif */
+}
+
+.sidebar-menu i {
+    margin-right: 15px;
+    font-size: 18px;
+}
+
+/* Konten Utama (Sebelah Kanan Sidebar) */
+.main-content {
+    flex: 1; /* Mengisi sisa ruang setelah sidebar */
+    padding: 30px;
+    background-color: var(--bg-color);
+    overflow-y: auto;
+}
+
+/* Bar Atas (Menampilkan Waktu & Profil) */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    background: var(--white);
+    padding: 15px 25px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Kotak Konten (Cards) */
+.card {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+}
+
+/* --- DESAIN TABEL --- */
+.table-responsive {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th {
+    background-color: #f8fafc;
+    color: var(--primary-color);
+    text-align: left;
+    padding: 15px;
+    border-bottom: 2px solid #edf2f7;
+    font-weight: 600;
+}
+
+td {
+    padding: 15px;
+    border-bottom: 1px solid #edf2f7;
+    vertical-align: middle;
+}
+
+tr:hover {
+    background-color: #f1f5f9;
+}
+
+/* Badge Status */
+.badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge-success { background: rgba(40, 167, 69, 0.1); color: #28a745; }
+.badge-warning { background: rgba(249, 168, 38, 0.1); color: #f9a826; }
+.badge-danger { background: rgba(233, 69, 96, 0.1); color: #e94560; }
+
+/* Filter & Search Bar */
+.filter-bar {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-item {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* --- DESAIN ALERT/TOAST BOX --- */
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--danger); /* Merah untuk Error */
+    color: white;
+    padding: 15px 25px;
+    border-radius: 5px;
+    box-shadow: var(--shadow);
+    transform: translateX(150%); /* Awalnya disembunyikan di luar layar kanan */
+    transition: transform 0.3s ease;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Class '.show' ditambahkan oleh Vue saat method showToast() dipanggil */
+.toast.show {
+    transform: translateX(0);
+}
+
+.toast.success {
+    background: var(--success);
+}
