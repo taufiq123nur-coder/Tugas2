@@ -274,9 +274,9 @@ var app = new Vue({
 
     // Menentukan teks status berdasarkan qty stok
     getStatusText(item) {
-      if (item.qty <= 0) return 'Out of Stock';
-      if (item.qty <= item.safety) return 'Low Stock';
-      return 'In Stock';
+      if (item.qty <= 0) return 'Stok Habis';
+      if (item.qty <= item.safety) return 'Stok Menipis';
+      return 'Stok Tersedia';
     },
 
     // Menentukan class CSS badge berdasarkan status
